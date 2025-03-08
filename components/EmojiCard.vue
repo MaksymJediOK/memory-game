@@ -1,17 +1,28 @@
 <script setup lang="ts">
 const flipped = ref(false)
+const flipRef = ref({
+    flipBack: () => (flipped.value = false)
+})
 
-defineProps<{ emojiCode: string }>()
-
+const { emojiCode } = defineProps<{ emojiCode: string }>()
+const emit = defineEmits<{
+    (event: 'flip', emojiName: string, flipRef: any): void
+}>()
 const getEmoji = (code: string) => {
     const hex = code.substring(2)
     return String.fromCodePoint(parseInt(hex, 16))
+}
+const flipCard = () => {
+    if(!flipped.value) {
+        flipped.value = true
+        emit('flip', emojiCode, flipRef)
+    }
 }
 </script>
 
 <template>
     <div class="flex items-center justify-center">
-        <div class="w-32 h-32 cursor-pointer perspective-1000" @click="flipped = !flipped">
+        <div class="w-32 h-32 cursor-pointer perspective-1000" @click="flipCard">
             <div
                 class="w-full h-full rounded-2xl shadow-lg transform-style-preserve-3d transition-transform duration-500"
                 :class="{ 'rotate-y-180': flipped }"

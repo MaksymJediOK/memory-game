@@ -3,26 +3,45 @@ import { getGrid } from '~/constants'
 import type { Emoji } from '~/types'
 
 const { category, cardsQuantity } = useGameConf()
-const {
-    data: emojis,
-    status,
-    error,
-} = useAsyncData('emojis', async () => {
+const { data: emojis, status } = useAsyncData('emojis', async () => {
     const response: Emoji[] = await $fetch(`http://localhost:4000/api/all/category/${category.value}`)
 
     return response.slice(0, cardsQuantity.value / 2)
 })
 
+const isOpen = ref(false)
 const gridLayout = computed(() => getGrid(cardsQuantity.value))
-
 const pairs = ref<Emoji[]>([])
+const openedCards = ref<{ emojiName: string; flipRef: any }[]>([])
+const solvedCards = ref<string[]>([])
+const handleFlip = (emojiName: string, flipRef: any) => {
+    if (solvedCards.value.includes(emojiName)) return
+
+    if (openedCards.value.length === 2) {
+        const temp = openedCards.value[0].emojiName === openedCards.value[1].emojiName
+        if (temp) {
+            solvedCards.value.push(emojiName)
+        } else {
+            openedCards.value.forEach((card) => {
+                card.flipRef.flipBack()
+            })
+        }
+        openedCards.value = []
+    }
+    openedCards.value.push({ emojiName: emojiName, flipRef: flipRef })
+}
 
 watchEffect(() => {
-    if (emojis.value) {
-        pairs.value = generateShuffledPairs(emojis.value)
-    }
+    if (emojis.value) pairs.value = generateShuffledPairs(emojis.value)
 })
-
+watch(
+    () => solvedCards.value.length,
+    (newLength) => {
+        if (newLength === cardsQuantity.value / 2) {
+            isOpen.value = true
+        }
+    },
+)
 </script>
 
 <template>
@@ -35,15 +54,21 @@ watchEffect(() => {
                 v-for="emoji in pairs"
                 :key="emoji.name"
                 :emoji-code="emoji.unicode[0]"
+                @flip="handleFlip"
             />
         </div>
     </section>
+    <UModal v-model="isOpen">
+        <div class="p-4">
+            <p>content</p>
+        </div>
+    </UModal>
 </template>
 
 <style scoped>
 .grid-layout-9 {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-template-rows: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
 }
 .grid-layout-20 {
     grid-template-columns: repeat(5, minmax(0, 1fr));
