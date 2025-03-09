@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { cardQuantity, emojiCategories } from '~/constants'
+import { cardQuantity, emojiCategories, timerOptions } from '~/constants'
 
-const { category, cardsQuantity } = useGameConf()
+const { category, cardsQuantity, timerData } = useGameConf()
 
-const startGame = async () => {
-    return navigateTo('game')
-}
+const startGame = async () => navigateTo('game')
 </script>
 
 <template>
@@ -24,6 +22,17 @@ const startGame = async () => {
                     :options="[...cardQuantity]"
                     @update:model-value="(val) => (cardsQuantity = Number(val))"
                 />
+                <div class="my-4 flex items-center gap-10">
+                    <UCheckbox v-model="timerData.timer" name="timer" label="Add a timer ?" />
+                    <URadioGroup
+                        v-model="timerData.timeToPlay"
+                        legend="Choose time to play"
+                        :disabled="!timerData.timer"
+                        :options="timerOptions"
+                        @update:model-value="(val) => (timerData.timeToPlay = Number(val))"
+                    />
+                </div>
+
                 <div class="flex justify-center mt-4 mb-2">
                     <UButton @click="startGame" color="black"> Start a game</UButton>
                 </div>
@@ -31,5 +40,3 @@ const startGame = async () => {
         </div>
     </section>
 </template>
-
-<style scoped></style>

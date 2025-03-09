@@ -25,3 +25,18 @@ export const getGrid = (num: number) => {
             return 'grid-layout-20'
     }
 }
+
+export const timerOptions = [
+    {
+        value: 60,
+        label: '1 minute',
+    },
+    {
+        value: 120,
+        label: '2 minutes',
+    },
+    {
+        value: 180,
+        label: '3 minutes',
+    },
+]
